@@ -1,6 +1,6 @@
 //
-//  ContentView.swift
-//  Shared
+//  CommandTable.swift
+//  beamacs
 //
 //  Created by Jeff Dlouhy on 12/10/21.
 //
@@ -19,24 +19,30 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import Foundation
 import SwiftUI
 
-// MARK: - ContentView
-
-struct ContentView: View {
-  @Binding var document: beamacsDocument
-
-  var body: some View {
-    //TextEditor(text: $document.text)
-    BufferView()
-  }
+protocol Documentable {
+  var name: String { get }
+  var description: String { get }
 }
 
+struct Command: Documentable {
+  let name: String
+  let description: String
 
-// MARK: - ContentView_Previews
-
-struct ContentView_Previews: PreviewProvider {
-  static var previews: some View {
-    ContentView(document: .constant(beamacsDocument()))
-  }
+  var action: (() -> Void)?
 }
+
+struct CommandTable: Documentable {
+  let name: String
+  let description: String
+
+  private var commands: [String: Command]
+}
+
+struct PrefixKey {
+  let prefix: KeyboardShortcut
+  let commandTable: CommandTable
+}
+
