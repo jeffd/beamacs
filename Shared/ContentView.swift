@@ -25,10 +25,14 @@ import SwiftUI
 
 struct ContentView: View {
   @Binding var document: beamacsDocument
+  @ObservedObject var commandReader = CommandReader()
 
   var body: some View {
     //TextEditor(text: $document.text)
-    BufferView()
+    BufferView(document.textContentStorage, commandReader: commandReader)
+      .onAppear {
+        commandReader.currentDocument = document
+      }
   }
 }
 

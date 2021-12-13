@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0BC7B379276581C7002BCBAA /* CommandReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC7B378276581C7002BCBAA /* CommandReader.swift */; };
+		0BC7B37A276581C7002BCBAA /* CommandReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC7B378276581C7002BCBAA /* CommandReader.swift */; };
+		0BC7B3AA2766819A002BCBAA /* Collections in Frameworks */ = {isa = PBXBuildFile; productRef = 0BC7B3A92766819A002BCBAA /* Collections */; };
+		0BC7B3AD276681AA002BCBAA /* Collections in Frameworks */ = {isa = PBXBuildFile; productRef = 0BC7B3AC276681AA002BCBAA /* Collections */; };
+		0BC7B3B02767B692002BCBAA /* Algorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 0BC7B3AF2767B692002BCBAA /* Algorithms */; };
+		0BC7B3B22767B69B002BCBAA /* Algorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 0BC7B3B12767B69B002BCBAA /* Algorithms */; };
 		0BD7D3EB276415D500F5B2FE /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD7D3EA276415D500F5B2FE /* Tests_iOS.swift */; };
 		0BD7D3ED276415D500F5B2FE /* Tests_iOSLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD7D3EC276415D500F5B2FE /* Tests_iOSLaunchTests.swift */; };
 		0BD7D3F7276415D500F5B2FE /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD7D3F6276415D500F5B2FE /* Tests_macOS.swift */; };
@@ -43,6 +49,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0BC7B378276581C7002BCBAA /* CommandReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandReader.swift; sourceTree = "<group>"; };
 		0BD7D3CE276415D300F5B2FE /* beamacsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = beamacsApp.swift; sourceTree = "<group>"; };
 		0BD7D3CF276415D300F5B2FE /* beamacsDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = beamacsDocument.swift; sourceTree = "<group>"; };
 		0BD7D3D0276415D300F5B2FE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -67,6 +74,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0BC7B3B22767B69B002BCBAA /* Algorithms in Frameworks */,
+				0BC7B3AA2766819A002BCBAA /* Collections in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,6 +83,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0BC7B3B02767B692002BCBAA /* Algorithms in Frameworks */,
+				0BC7B3AD276681AA002BCBAA /* Collections in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,6 +105,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0BC7B3AB276681AA002BCBAA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		0BD7D3C8276415D300F5B2FE = {
 			isa = PBXGroup;
 			children = (
@@ -103,6 +121,7 @@
 				0BD7D3E9276415D500F5B2FE /* Tests iOS */,
 				0BD7D3F5276415D500F5B2FE /* Tests macOS */,
 				0BD7D3D7276415D500F5B2FE /* Products */,
+				0BC7B3AB276681AA002BCBAA /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -114,6 +133,7 @@
 				0BD7D3D0276415D300F5B2FE /* ContentView.swift */,
 				0BD7D41327643C8100F5B2FE /* BufferView.swift */,
 				0BD7D4102764194200F5B2FE /* CommandTable.swift */,
+				0BC7B378276581C7002BCBAA /* CommandReader.swift */,
 				0BD7D3D1276415D500F5B2FE /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -181,6 +201,10 @@
 			dependencies = (
 			);
 			name = "beamacs (iOS)";
+			packageProductDependencies = (
+				0BC7B3A92766819A002BCBAA /* Collections */,
+				0BC7B3B12767B69B002BCBAA /* Algorithms */,
+			);
 			productName = "beamacs (iOS)";
 			productReference = 0BD7D3D6276415D500F5B2FE /* beamacs.app */;
 			productType = "com.apple.product-type.application";
@@ -198,6 +222,10 @@
 			dependencies = (
 			);
 			name = "beamacs (macOS)";
+			packageProductDependencies = (
+				0BC7B3AC276681AA002BCBAA /* Collections */,
+				0BC7B3AF2767B692002BCBAA /* Algorithms */,
+			);
 			productName = "beamacs (macOS)";
 			productReference = 0BD7D3DE276415D500F5B2FE /* beamacs.app */;
 			productType = "com.apple.product-type.application";
@@ -273,6 +301,10 @@
 				Base,
 			);
 			mainGroup = 0BD7D3C8276415D300F5B2FE;
+			packageReferences = (
+				0BC7B3A827668199002BCBAA /* XCRemoteSwiftPackageReference "swift-collections" */,
+				0BC7B3AE2767B692002BCBAA /* XCRemoteSwiftPackageReference "swift-algorithms" */,
+			);
 			productRefGroup = 0BD7D3D7276415D500F5B2FE /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -325,6 +357,7 @@
 			files = (
 				0BD7D4112764194200F5B2FE /* CommandTable.swift in Sources */,
 				0BD7D3FA276415D500F5B2FE /* beamacsApp.swift in Sources */,
+				0BC7B379276581C7002BCBAA /* CommandReader.swift in Sources */,
 				0BD7D3FC276415D500F5B2FE /* beamacsDocument.swift in Sources */,
 				0BD7D3FE276415D500F5B2FE /* ContentView.swift in Sources */,
 				0BD7D41427643C8100F5B2FE /* BufferView.swift in Sources */,
@@ -337,6 +370,7 @@
 			files = (
 				0BD7D4122764194200F5B2FE /* CommandTable.swift in Sources */,
 				0BD7D3FB276415D500F5B2FE /* beamacsApp.swift in Sources */,
+				0BC7B37A276581C7002BCBAA /* CommandReader.swift in Sources */,
 				0BD7D3FD276415D500F5B2FE /* beamacsDocument.swift in Sources */,
 				0BD7D3FF276415D500F5B2FE /* ContentView.swift in Sources */,
 				0BD7D41527643C8100F5B2FE /* BufferView.swift in Sources */,
@@ -763,6 +797,48 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		0BC7B3A827668199002BCBAA /* XCRemoteSwiftPackageReference "swift-collections" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-collections.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.2;
+			};
+		};
+		0BC7B3AE2767B692002BCBAA /* XCRemoteSwiftPackageReference "swift-algorithms" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-algorithms.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0BC7B3A92766819A002BCBAA /* Collections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0BC7B3A827668199002BCBAA /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = Collections;
+		};
+		0BC7B3AC276681AA002BCBAA /* Collections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0BC7B3A827668199002BCBAA /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = Collections;
+		};
+		0BC7B3AF2767B692002BCBAA /* Algorithms */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0BC7B3AE2767B692002BCBAA /* XCRemoteSwiftPackageReference "swift-algorithms" */;
+			productName = Algorithms;
+		};
+		0BC7B3B12767B69B002BCBAA /* Algorithms */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0BC7B3AE2767B692002BCBAA /* XCRemoteSwiftPackageReference "swift-algorithms" */;
+			productName = Algorithms;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0BD7D3C9276415D300F5B2FE /* Project object */;
 }

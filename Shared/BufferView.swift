@@ -20,36 +20,50 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import SwiftUI
+import Combine
 
 #if os(macOS)
 struct BufferView: NSViewRepresentable {
-  let editorView = EditorView()
+  private let editorView: EditorView
+
+  init(_ textContentStorage: NSTextContentStorage, commandReader: CommandReader) {
+    self.editorView = EditorView(textContentStorage: textContentStorage, commandReader: commandReader)
+  }
 
   func makeNSView(context: Context) -> some NSView {
     editorView
   }
 
-  func updateNSView(_ nsView: NSViewType, context: Context) {
-
-  }
+  func updateNSView(_ nsView: NSViewType, context: Context) {}
 }
 
 internal class BMTextView: NSTextView {
   override var acceptsFirstResponder: Bool {
     true
   }
+
+  override func keyDown(with event: NSEvent) {
+    superview?.keyDown(with: event)
+  }
+}
+
+struct TextSelectionChange {
+  let from: [NSRange]
+  let to: [NSRange]
 }
 
 internal class EditorView: NSView, NSTextViewDelegate {
   private let textLayoutManager = NSTextLayoutManager()
-  private var textContentStorage = NSTextContentStorage()
+  private var textContentStorage: NSTextContentStorage
   private let textContainer: NSTextContainer
   private let textView: BMTextView
   private let scrollView = NSScrollView()
+  private var commandReader: CommandReader?
 
   override init(frame frameRect: NSRect) {
     textContainer = .init(size: frameRect.size)
     textLayoutManager.textContainer = textContainer
+    textContentStorage = .init()
     textView = .init(frame: frameRect, textContainer: textContainer)
     super.init(frame: frameRect)
     doInit()
@@ -58,8 +72,19 @@ internal class EditorView: NSView, NSTextViewDelegate {
   required init?(coder: NSCoder) {
     textContainer = .init(coder: coder)
     textLayoutManager.textContainer = textContainer
+    textContentStorage = .init()
     textView = .init(frame: .zero, textContainer: textContainer)
     super.init(coder: coder)
+    doInit()
+  }
+
+  init(textContentStorage: NSTextContentStorage, commandReader: CommandReader) {
+    self.textContentStorage = textContentStorage
+    textContainer = .init()
+    textLayoutManager.textContainer = textContainer
+    textView = .init(frame: .zero, textContainer: textContainer)
+    super.init(frame: .zero)
+    self.commandReader = commandReader
     doInit()
   }
 
@@ -94,13 +119,9 @@ internal class EditorView: NSView, NSTextViewDelegate {
     textView.delegate = self
     textView.isEditable = true
     textView.isSelectable = true
-//    textView.minSize = .init()
-//    textView.maxSize = containerSize
     textView.isVerticallyResizable = true
     textView.isHorizontallyResizable = true
-    textContentStorage.performEditingTransaction {
-      textView.textStorage?.append(NSAttributedString(string: "Text content..."))
-    }
+    textView.usesAdaptiveColorMappingForDarkAppearance = true
     scrollView.documentView = textView
   }
 
@@ -116,31 +137,58 @@ internal class EditorView: NSView, NSTextViewDelegate {
       // TODO: Figure out modifiers
       let shortcut = KeyboardShortcut(key, modifiers: .init(rawValue: Int(event.modifierFlags.rawValue)), localization: .automatic)
 
-      print("Shortcut: \(shortcut)")
+      //print("Shortcut: \(shortcut)")
 
-      textContentStorage.performEditingTransaction {
-        textView.textStorage?.append(NSAttributedString(string: event.charactersIgnoringModifiers ?? ""))
-      }
+      commandReader?.latestKeyDown.send(shortcut)
+
+      //insertText(event.charactersIgnoringModifiers)
     }
     else {
       super.keyDown(with: event)
     }
   }
 
-  func insertText() {
-    textContentStorage.performEditingTransaction {
-      textView.textStorage?.append(NSAttributedString(string: "Text content..."))
+  func insertText(_ textToInsert: String?) {
+    guard let textToInsert = textToInsert else { return }
+    let attributedInsertion = NSAttributedString(string: textToInsert)
+
+    guard let textStorage = textContentStorage.textStorage else { return }
+    let selections = textLayoutManager.textSelections
+
+    if selections.isEmpty {
+      // If there's no selection location, then append to the end
+      textContentStorage.performEditingTransaction {
+        textStorage.append(attributedInsertion)
+      }
+    } else {
+//      textContentStorage.performEditingTransaction {
+//        textContentStorage.textStorage.insert(attributedInsertion, at: selections.first?.textRanges.first!.location)
+//      }
+
+      textContentStorage.performEditingTransaction {
+        selections.forEach { selection in
+          selection.textRanges.forEach { range in
+            //let elementsInRange = textContentStorage.textElements(for: range)
+            //textContentStorage.replaceContents(in: range, with: T##[NSTextElement]?)
+            //textStorage.insert(attributedInsertion, at: range.location as Int)
+            let index = textLayoutManager.offset(from: textLayoutManager.documentRange.location, to: range.location)
+            textStorage.insert(attributedInsertion, at: index)
+            //textLayoutManager.replaceContents(in: range, with: attributedInsertion)
+          }
+        }
+      }
+
     }
   }
 
   func textView(_ textView: NSTextView, shouldChangeTextInRanges affectedRanges: [NSValue], replacementStrings: [String]?) -> Bool {
     print("shouldChangeTextInRanges: \(affectedRanges)")
-    return true
+    return false
   }
 
   func textView(_ textView: NSTextView, shouldChangeTextIn affectedCharRange: NSRange, replacementString: String?) -> Bool {
     print("shouldChangeTextInRanges: \(affectedCharRange)")
-    return true
+    return false
   }
 
   func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
@@ -155,6 +203,13 @@ internal class EditorView: NSView, NSTextViewDelegate {
 
   func textView(_ textView: NSTextView, willChangeSelectionFromCharacterRanges oldSelectedCharRanges: [NSValue], toCharacterRanges newSelectedCharRanges: [NSValue]) -> [NSValue] {
     print("willChangeSelectionFromCharacterRanges: \(oldSelectedCharRanges) toCharacterRanges: \(newSelectedCharRanges)")
+
+    let fromRanges = oldSelectedCharRanges.map(\.rangeValue)
+    let toRanges = newSelectedCharRanges.map(\.rangeValue)
+
+    let rangeChange = TextSelectionChange(from: fromRanges, to: toRanges)
+    commandReader?.latestSelection.send(rangeChange)
+
     return newSelectedCharRanges
   }
 }
@@ -162,6 +217,6 @@ internal class EditorView: NSView, NSTextViewDelegate {
 
 struct SwiftUIView_Previews: PreviewProvider {
   static var previews: some View {
-    BufferView()
+    BufferView(.init(), commandReader: .init())
   }
 }

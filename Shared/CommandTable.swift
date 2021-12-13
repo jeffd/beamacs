@@ -27,18 +27,38 @@ protocol Documentable {
   var description: String { get }
 }
 
-struct Command: Documentable {
+protocol Undoable {
+  var lastExecuted: Date { get }
+  /// The opposite of the original action (aka 'cancel')
+  var inverseAction: (() -> Void) { get }
+}
+
+struct Command: Hashable, Equatable, Documentable, Undoable {
+  var lastExecuted: Date
   let name: String
   let description: String
+  private let id = UUID()
 
-  var action: (() -> Void)?
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(lastExecuted)
+    hasher.combine(name)
+    hasher.combine(description)
+    hasher.combine(id)
+  }
+
+  static func == (lhs: Command, rhs: Command) -> Bool {
+    lhs.hashValue == rhs.hashValue
+  }
+
+  var action: (() -> Void)
+  var inverseAction: (() -> Void)
 }
 
 struct CommandTable: Documentable {
   let name: String
   let description: String
 
-  private var commands: [String: Command]
+  private var commands: [String: Command] = .init()
 }
 
 struct PrefixKey {
@@ -46,3 +66,13 @@ struct PrefixKey {
   let commandTable: CommandTable
 }
 
+struct Mode: Documentable {
+  var name: String
+  var description: String
+
+//  let commands: CommandTable
+//
+//  init() {
+//    commands = .init(name: "fundamental", description: "ff", commands: .init())
+//  }
+}

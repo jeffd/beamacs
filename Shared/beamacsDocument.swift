@@ -28,32 +28,51 @@ extension UTType {
   }
 }
 
+enum FileError: Error {
+  case noString
+}
+
 // MARK: - beamacsDocument
 
 struct beamacsDocument: FileDocument {
   // MARK: Lifecycle
 
   init(text: String = "Hello, world!") {
-    self.text = text
+    self.textContentStorage = .init()
+    self.textContentStorage.performEditingTransaction {
+      self.textContentStorage.textStorage?.append(.init(string: text))
+    }
   }
 
   init(configuration: ReadConfiguration) throws {
-    guard let data = configuration.file.regularFileContents,
-          let string = String(data: data, encoding: .utf8)
-    else {
+    guard let data = configuration.file.regularFileContents else {
       throw CocoaError(.fileReadCorruptFile)
     }
-    self.text = string
+
+    self.textContentStorage = .init()
+
+    do {
+      try textContentStorage.textStorage?.read(from: data, options: .init(), documentAttributes: nil, error: ())
+    } catch {
+      print("unable to read file content")
+      __NSBeep()
+      throw CocoaError(.fileReadCorruptFile)
+    }
   }
 
   // MARK: Internal
 
   static var readableContentTypes: [UTType] { [.exampleText] }
 
-  var text: String
+  var textContentStorage: NSTextContentStorage
 
   func fileWrapper(configuration _: WriteConfiguration) throws -> FileWrapper {
-    let data = text.data(using: .utf8)!
+    guard let attributedDocumentString = textContentStorage.attributedString else { throw FileError.noString }
+
+    let data = try attributedDocumentString.data(from: .init(location: 0,
+                                                             length: attributedDocumentString.length),
+                                                 documentAttributes: [.documentType : NSAttributedString.DocumentType.rtf])
+
     return .init(regularFileWithContents: data)
   }
 }
