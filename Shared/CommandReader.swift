@@ -67,13 +67,15 @@ class CommandReader: NSObject, ObservableObject {
   }
 
   let undoShortcut = KeyboardShortcut("z", modifiers: .command, localization: .automatic)
-  let redoShortcut = KeyboardShortcut("r", modifiers: [.command, .shift] , localization: .automatic)
+  //let redoShortcut = KeyboardShortcut("z", modifiers: [.command, .shift] , localization: .automatic)
+  let redoShortcut = KeyboardShortcut("r", modifiers: .command , localization: .automatic)
+  let deleteBackward = KeyboardShortcut(.delete)
 
   func dispatchOnShortcut(_ shortcut: KeyboardShortcut) {
     guard let firstCharScalar = shortcut.key.character.unicodeScalars.first else { return }
 
-    switch shortcut.key.character {
-    case "z":
+    switch shortcut {
+    case undoShortcut:
       print("Undo!")
       do {
         try undoNextGroup(with: Self.maxCommandGroupingDelta)
@@ -81,7 +83,7 @@ class CommandReader: NSObject, ObservableObject {
         __NSBeep()
       }
       return
-    case "r":
+    case redoShortcut:
       print("Redo!")
       do {
         try redoNextGroup(with: Self.maxCommandGroupingDelta)

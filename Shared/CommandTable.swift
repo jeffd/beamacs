@@ -22,38 +22,6 @@
 import Foundation
 import SwiftUI
 
-protocol Documentable {
-  var name: String { get }
-  var description: String { get }
-}
-
-protocol Undoable {
-  var lastExecuted: Date { get }
-  /// The opposite of the original action (aka 'cancel')
-  var inverseAction: (() -> Void) { get }
-}
-
-struct Command: Hashable, Equatable, Documentable, Undoable {
-  var lastExecuted: Date
-  let name: String
-  let description: String
-  private let id = UUID()
-
-  func hash(into hasher: inout Hasher) {
-    hasher.combine(lastExecuted)
-    hasher.combine(name)
-    hasher.combine(description)
-    hasher.combine(id)
-  }
-
-  static func == (lhs: Command, rhs: Command) -> Bool {
-    lhs.hashValue == rhs.hashValue
-  }
-
-  var action: (() -> Void)
-  var inverseAction: (() -> Void)
-}
-
 struct CommandTable: Documentable {
   let name: String
   let description: String

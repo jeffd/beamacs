@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0B2C4A5D27690226002EA9FB /* Command.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B2C4A5C27690226002EA9FB /* Command.swift */; };
+		0B2C4A5E27690226002EA9FB /* Command.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B2C4A5C27690226002EA9FB /* Command.swift */; };
 		0BC7B379276581C7002BCBAA /* CommandReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC7B378276581C7002BCBAA /* CommandReader.swift */; };
 		0BC7B37A276581C7002BCBAA /* CommandReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC7B378276581C7002BCBAA /* CommandReader.swift */; };
 		0BC7B3AA2766819A002BCBAA /* Collections in Frameworks */ = {isa = PBXBuildFile; productRef = 0BC7B3A92766819A002BCBAA /* Collections */; };
@@ -49,6 +51,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0B2C4A5C27690226002EA9FB /* Command.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Command.swift; sourceTree = "<group>"; };
 		0BC7B378276581C7002BCBAA /* CommandReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandReader.swift; sourceTree = "<group>"; };
 		0BD7D3CE276415D300F5B2FE /* beamacsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = beamacsApp.swift; sourceTree = "<group>"; };
 		0BD7D3CF276415D300F5B2FE /* beamacsDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = beamacsDocument.swift; sourceTree = "<group>"; };
@@ -132,6 +135,7 @@
 				0BD7D3CF276415D300F5B2FE /* beamacsDocument.swift */,
 				0BD7D3D0276415D300F5B2FE /* ContentView.swift */,
 				0BD7D41327643C8100F5B2FE /* BufferView.swift */,
+				0B2C4A5C27690226002EA9FB /* Command.swift */,
 				0BD7D4102764194200F5B2FE /* CommandTable.swift */,
 				0BC7B378276581C7002BCBAA /* CommandReader.swift */,
 				0BD7D3D1276415D500F5B2FE /* Assets.xcassets */,
@@ -359,6 +363,7 @@
 				0BD7D3FA276415D500F5B2FE /* beamacsApp.swift in Sources */,
 				0BC7B379276581C7002BCBAA /* CommandReader.swift in Sources */,
 				0BD7D3FC276415D500F5B2FE /* beamacsDocument.swift in Sources */,
+				0B2C4A5D27690226002EA9FB /* Command.swift in Sources */,
 				0BD7D3FE276415D500F5B2FE /* ContentView.swift in Sources */,
 				0BD7D41427643C8100F5B2FE /* BufferView.swift in Sources */,
 			);
@@ -372,6 +377,7 @@
 				0BD7D3FB276415D500F5B2FE /* beamacsApp.swift in Sources */,
 				0BC7B37A276581C7002BCBAA /* CommandReader.swift in Sources */,
 				0BD7D3FD276415D500F5B2FE /* beamacsDocument.swift in Sources */,
+				0B2C4A5E27690226002EA9FB /* Command.swift in Sources */,
 				0BD7D3FF276415D500F5B2FE /* ContentView.swift in Sources */,
 				0BD7D41527643C8100F5B2FE /* BufferView.swift in Sources */,
 			);
