@@ -53,7 +53,15 @@ class FundamentalMode: Mode {
   }
 
   func setupCommands() {
+    /// Ctrl-w will delete the text in the current selected region. In Emacs this is kill-region.
+    defineShortcut(KeyboardShortcut("w", modifiers: .control, localization: .automatic)) {
+      try self.makeDeleteTextCommand(for: self.currentSelections, in: self.currentDocument)
+    }
 
+    /// Add support for the `return` key which inserts a new line.
+    defineShortcut(.defaultAction) {
+      try self.makeInsertTextCommand(for: self.currentSelections, with: .init(string: "\n"), in: self.currentDocument)
+    }
   }
 
   func command(for shortcut: KeyboardShortcut) throws -> Command {
@@ -67,40 +75,53 @@ class FundamentalMode: Mode {
     if let firstCharScalar = shortcut.key.character.unicodeScalars.first,
        CharacterSet.alphanumerics.contains(firstCharScalar),
        shortcut.modifiers.isDisjoint(with: .all) {
-      return try self.makeInsertKeyCommand(shortcut)
+      return try self.makeInsertKeyCommand(shortcut, in: currentDocument)
     }
 
     throw CommandError.notFound
   }
 
-  func makeInsertKeyCommand(_ shortcut: KeyboardShortcut) throws -> Command {
-    guard let textContentStorage = currentDocument?.textContentStorage else { throw CommandError.documentNil }
+  func makeInsertKeyCommand(_ shortcut: KeyboardShortcut, in document: beamacsDocument?) throws -> Command {
     let keyToInsert = NSAttributedString(string: String(shortcut.key.character))
 
-    let modifyAction = try modify(textContentStorage, in: currentSelections, with: keyToInsert)
+    let modifyAction = try modify(document?.textContentStorage, in: currentSelections, with: keyToInsert)
     return Command(name: "self-insert-\(keyToInsert.string)",
                    description: "A self inserting character key",
                    lastExecuted: Date(),
                    action: modifyAction.thunk,
                    inverseAction: modifyAction.inverse)
   }
+
+  func makeInsertTextCommand(for ranges: [NSRange], with string: NSAttributedString, in document: beamacsDocument?) throws -> Command {
+    let modifyAction = try modify(document?.textContentStorage, in: ranges, with: string)
+    return Command(name: "InsertText",
+                   description: "Inserts text into the given range",
+                   lastExecuted: Date(),
+                   action: modifyAction.thunk,
+                   inverseAction: modifyAction.inverse)
+  }
+
+  func makeDeleteTextCommand(for ranges: [NSRange], in document: beamacsDocument?) throws -> Command {
+    // At a basic level, deleting is just inserting an empty string into the range.
+    // However it could do more like put the deleted text on a kill-ring or pasteboard.
+    try makeInsertTextCommand(for: ranges, with: .init(string: ""), in: document)
+  }
   
   @discardableResult
-  func modify(_ textContentStorage: NSTextContentStorage, in ranges: [NSRange], with string: NSAttributedString) throws -> (thunk: (() -> Void), inverse: (() -> Void)) {
+  func modify(_ textContentStorage: NSTextContentStorage?, in ranges: [NSRange], with string: NSAttributedString) throws -> (thunk: (() -> Void), inverse: (() -> Void)) {
+    guard let textContentStorage = textContentStorage else { throw CommandError.documentNil }
     // Note: For demo purposes, we'll keep it simple and just deal with one selection range, assuming one user.
     guard let firstRange = ranges.first else { throw CommandError.invalidRange }
     let previousContents = textContentStorage.textStorage?.attributedSubstring(from: firstRange)
     let rangeAfterModification = NSRange(location: firstRange.location, length: string.length)
 
     let thunk: (() -> Void) = {
-      print("Insert \(string)")
       textContentStorage.performEditingTransaction {
         textContentStorage.textStorage?.replaceCharacters(in: firstRange, with: string)
       }
     }
 
     let inverse: (() -> Void) = {
-      print("Undo Insert of \(string)")
       textContentStorage.performEditingTransaction {
         if let previousContents = previousContents {
           textContentStorage.textStorage?.replaceCharacters(in: rangeAfterModification, with: previousContents)
@@ -112,5 +133,4 @@ class FundamentalMode: Mode {
 
     return (thunk, inverse)
   }
-
 }

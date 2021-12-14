@@ -54,10 +54,10 @@ class CommandReader: NSObject, ObservableObject {
       })
     
     // For demo purposes we will bind keys for Undo/Redo to the current mode
-    self.currentMode.defineShortcut(KeyboardShortcut("z", modifiers: .command, localization: .automatic)) {
-      .init(name: "undo", description: "undoes the last command", lastExecuted: Date()) {
+    currentMode.defineShortcut(KeyboardShortcut("z", modifiers: .command, localization: .automatic)) {
+      .init(name: "undo", description: "undoes the last command", lastExecuted: Date()) { [weak self] in
         do {
-          try self.undoNextGroup(with: Self.maxCommandGroupingDelta)
+          try self?.undoNextGroup(with: Self.maxCommandGroupingDelta)
         } catch {
           print("nothing left to undo!")
           __NSBeep()
@@ -65,10 +65,10 @@ class CommandReader: NSObject, ObservableObject {
       }
     }
 
-    self.currentMode.defineShortcut(KeyboardShortcut("r", modifiers: .command , localization: .automatic)) {
-      .init(name: "redo", description: "redoes the last command", lastExecuted: Date()) {
+    currentMode.defineShortcut(KeyboardShortcut("r", modifiers: .command, localization: .automatic)) {
+      .init(name: "redo", description: "redoes the last command", lastExecuted: Date()) { [weak self] in
         do {
-          try self.redoNextGroup(with: Self.maxCommandGroupingDelta)
+          try self?.redoNextGroup(with: Self.maxCommandGroupingDelta)
         } catch {
           print("nothing else to redo!")
           __NSBeep()
