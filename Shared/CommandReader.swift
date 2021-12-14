@@ -24,13 +24,6 @@ import Combine
 import Collections
 import Algorithms
 
-enum CommandError: Error {
-  case documentNil
-  case noMoreUndo
-  case noMoreRedo
-  case invalidRange
-}
-
 class CommandReader: NSObject, ObservableObject {
   private static let maxCommandGroupingDelta: TimeInterval = 2
 
@@ -43,74 +36,72 @@ class CommandReader: NSObject, ObservableObject {
   private var undoStack: Deque<Command> = .init()
   private var redoStack: Deque<Command> = .init()
 
-  var currentDocument: beamacsDocument?
-  private var currentSelections: [NSRange] = .init()
+  var currentMode = FundamentalMode()
 
   override init() {
     super.init()
     keyDownSubscriber = latestKeyDown
       .receive(on: RunLoop.main)
       .sink(receiveValue: { shortcut in
-        //print("Command Reader Got Shortcut: \(shortcut.key.character)")
         self.dispatchOnShortcut(shortcut)
       })
 
     selectionSubscriber = latestSelection
       .receive(on: RunLoop.main)
       .sink(receiveValue: { latestChange in
-        print("Got selection change")
-        // Add it to the queue
-        self.currentSelections = latestChange.to
-        //self.pushCommand(self.makeChangeSelectionCommand(latestChange))
+        self.currentMode.currentSelections = latestChange.to
+        // TODO: Possibly keep track of changes to selection from the mouse
       })
-
-  }
-
-  let undoShortcut = KeyboardShortcut("z", modifiers: .command, localization: .automatic)
-  //let redoShortcut = KeyboardShortcut("z", modifiers: [.command, .shift] , localization: .automatic)
-  let redoShortcut = KeyboardShortcut("r", modifiers: .command , localization: .automatic)
-  let deleteBackward = KeyboardShortcut(.delete)
-
-  func dispatchOnShortcut(_ shortcut: KeyboardShortcut) {
-    guard let firstCharScalar = shortcut.key.character.unicodeScalars.first else { return }
-
-    switch shortcut {
-    case undoShortcut:
-      print("Undo!")
-      do {
-        try undoNextGroup(with: Self.maxCommandGroupingDelta)
-      } catch {
-        __NSBeep()
+    
+    // For demo purposes we will bind keys for Undo/Redo to the current mode
+    self.currentMode.defineShortcut(KeyboardShortcut("z", modifiers: .command, localization: .automatic)) {
+      .init(name: "undo", description: "undoes the last command", lastExecuted: Date()) {
+        do {
+          try self.undoNextGroup(with: Self.maxCommandGroupingDelta)
+        } catch {
+          print("nothing left to undo!")
+          __NSBeep()
+        }
       }
-      return
-    case redoShortcut:
-      print("Redo!")
-      do {
-        try redoNextGroup(with: Self.maxCommandGroupingDelta)
-      } catch {
-        __NSBeep()
-      }
-      return
-    default:
-      break
     }
 
-    if CharacterSet.alphanumerics.contains(firstCharScalar), shortcut.modifiers.isDisjoint(with: .all) {
-      print("IS A SELF INSERTING KEY")
-      if let newCommand = try? self.makeInsertKeyCommand(shortcut) {
-        pushCommand(newCommand)
+    self.currentMode.defineShortcut(KeyboardShortcut("r", modifiers: .command , localization: .automatic)) {
+      .init(name: "redo", description: "redoes the last command", lastExecuted: Date()) {
+        do {
+          try self.redoNextGroup(with: Self.maxCommandGroupingDelta)
+        } catch {
+          print("nothing else to redo!")
+          __NSBeep()
+        }
       }
+    }
+  }
+
+  func dispatchOnShortcut(_ shortcut: KeyboardShortcut) {
+    do {
+      pushCommand(try currentMode.command(for: shortcut))
+    } catch {
+      __NSBeep()
+      print("Unable to run command: \(error.localizedDescription)")
     }
   }
 
   private func pushCommand(_ command: Command) {
-    // Wipe the redo stack?
-    redoStack.removeAll()
+    let isCommandReversible = (command.inverseAction != nil)
+    if isCommandReversible {
+      // Wipe the redo stack
+      //
+      // Note: If we wanted to do a tree of undos/redos, we could branch here instead.
+      redoStack.removeAll()
+    }
 
     // Run the command
     command.action()
-    // Add it to the undo stack
-    undoStack.prepend(command)
+
+    // Add it to the undo stack if it can be reversed
+    if isCommandReversible {
+      undoStack.prepend(command)
+    }
   }
 
   /// Determine if the two commands were executed with a time range for the given delta
@@ -139,7 +130,7 @@ class CommandReader: NSObject, ObservableObject {
 
     while firstGroupCount > 0 {
       guard let poppedUndoCommand = undoStack.popFirst() else { throw CommandError.noMoreUndo }
-      poppedUndoCommand.inverseAction()
+      poppedUndoCommand.inverseAction?()
       redoStack.prepend(poppedUndoCommand)
       firstGroupCount -= 1
     }
@@ -162,62 +153,6 @@ class CommandReader: NSObject, ObservableObject {
       poppedRedoCommand.action()
       undoStack.prepend(poppedRedoCommand)
       firstGroupCount -= 1
-    }
-  }
-
-  func makeInsertKeyCommand(_ shortcut: KeyboardShortcut) throws -> Command {
-    guard let textContentStorage = currentDocument?.textContentStorage,
-          let documentLength = textContentStorage.textStorage?.length else { throw CommandError.documentNil }
-
-    let keyToInsert = NSAttributedString(string: String(shortcut.key.character))
-
-    let modifyAction = try modify(textContentStorage, in: currentSelections, with: keyToInsert)
-    return Command(lastExecuted: Date(),
-                   name: "self-insert-\(keyToInsert.string)",
-                   description: "A self inserting character key",
-                   action: modifyAction.thunk,
-                   inverseAction: modifyAction.inverse)
-  }
-
-  @discardableResult
-  func modify(_ textContentStorage: NSTextContentStorage, in ranges: [NSRange], with string: NSAttributedString) throws -> (thunk: (() -> Void), inverse: (() -> Void)) {
-    let previousContentInRanges = ranges.compactMap { range -> (range: NSRange, attributedSubstring: NSAttributedString)? in
-      guard let textStorage = textContentStorage.textStorage else { return nil }
-      return (range: range, attributedSubstring: textStorage.attributedSubstring(from: range))
-    }
-
-    guard let firstRange = ranges.first else { throw CommandError.invalidRange }
-    let previousContents = textContentStorage.textStorage?.attributedSubstring(from: firstRange)
-    let rangeAfterModification = NSRange(location: firstRange.location, length: string.length)
-
-    let thunk: (() -> Void) = {
-      print("Insert \(string)")
-      textContentStorage.performEditingTransaction {
-        textContentStorage.textStorage?.replaceCharacters(in: firstRange, with: string)
-      }
-    }
-
-    let inverse: (() -> Void) = {
-      print("Undo Insert of \(string)")
-      textContentStorage.performEditingTransaction {
-        if let previousContents = previousContents {
-          textContentStorage.textStorage?.replaceCharacters(in: rangeAfterModification, with: previousContents)
-        } else {
-          print("previous contents empty")
-        }
-      }
-    }
-
-    return (thunk, inverse)
-  }
-
-  func makeChangeSelectionCommand(_ selectionChange: TextSelectionChange) -> Command {
-    return Command(lastExecuted: Date(),
-                   name: "change-text-selection",
-                   description: "Change the currently selected text") {
-      print("Should select new ranges: \(selectionChange.to)")
-    } inverseAction: {
-      print("Revert selection to ranges: \(selectionChange.from)")
     }
   }
 }

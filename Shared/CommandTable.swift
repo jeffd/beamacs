@@ -22,25 +22,29 @@
 import Foundation
 import SwiftUI
 
-struct CommandTable: Documentable {
+typealias CommandThunk = (() throws -> Command)
+
+/// A lookup table of keystrokes to commands.
+struct CommandTable: Documentable, Hashable {
   let name: String
   let description: String
 
-  private var commands: [String: Command] = .init()
+  var commands: [KeyboardShortcut: KeystrokeResult] = .init()
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(name)
+    hasher.combine(description)
+    commands.keys.forEach { hasher.combine($0) }
+  }
+
+  static func == (lhs: CommandTable, rhs: CommandTable) -> Bool {
+    lhs.hashValue == rhs.hashValue
+  }
 }
 
-struct PrefixKey {
-  let prefix: KeyboardShortcut
-  let commandTable: CommandTable
-}
-
-struct Mode: Documentable {
-  var name: String
-  var description: String
-
-//  let commands: CommandTable
-//
-//  init() {
-//    commands = .init(name: "fundamental", description: "ff", commands: .init())
-//  }
+/// A KeystrokeResult is a keyboard shortcut that maps to a command
+/// or another command table to dispatch on.
+struct KeystrokeResult {
+  let command: CommandThunk
+  let commandTable: CommandTable?
 }

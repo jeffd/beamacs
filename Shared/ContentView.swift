@@ -28,10 +28,9 @@ struct ContentView: View {
   @ObservedObject var commandReader = CommandReader()
 
   var body: some View {
-    //TextEditor(text: $document.text)
     BufferView(document.textContentStorage, commandReader: commandReader)
       .onAppear {
-        commandReader.currentDocument = document
+        commandReader.currentMode.currentDocument = document
       }
   }
 }

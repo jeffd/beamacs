@@ -33,6 +33,13 @@ struct TextSelectionChange {
   let to: [NSRange]
 }
 
+protocol Commandable: Hashable, Identifiable, Documentable {}
+extension Commandable {
+  var id: UUID {
+    UUID()
+  }
+}
+
 /// If something is undoable, it has a function which will be the
 /// opposite of the previous state.
 protocol Undoable {
@@ -42,21 +49,28 @@ protocol Undoable {
   var inverseAction: (() -> Void) { get }
 }
 
-struct Command: Hashable, Equatable, Documentable, Undoable {
-  private let id = UUID()
-  var lastExecuted: Date
+enum CommandError: Error {
+  case documentNil
+  case noMoreUndo
+  case noMoreRedo
+  case invalidRange
+  case notFound
+}
+
+struct Command: Commandable {
   let name: String
   let description: String
+  var lastExecuted: Date
 
   /// The possible state mutating action of the command
   var action: (() -> Void)
+
   /// The inverse of the `action` which will revert to the previous state.
   /// Since the information needed for the action is the same information
   /// needed for the reversion, state can be stored in this closure at definition time.
-  var inverseAction: (() -> Void)
+  var inverseAction: (() -> Void)? = nil
 
   func hash(into hasher: inout Hasher) {
-    hasher.combine(lastExecuted)
     hasher.combine(name)
     hasher.combine(description)
     hasher.combine(id)
