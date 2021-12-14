@@ -54,13 +54,31 @@ class FundamentalMode: Mode {
 
   func setupCommands() {
     /// Ctrl-w will delete the text in the current selected region. In Emacs this is kill-region.
-    defineShortcut(KeyboardShortcut("w", modifiers: .control, localization: .automatic)) {
-      try self.makeDeleteTextCommand(for: self.currentSelections, in: self.currentDocument)
+    defineShortcut(KeyboardShortcut(.delete)) {
+      var deleteRange = self.currentSelections
+
+      // Modify the range to delete if this is a backspace
+      if let currentSelection = self.currentSelections.first,
+         let documentLength = self.currentDocument?.textContentStorage.textStorage?.length,
+         currentSelection.length == 0, // It's just the cursor
+         currentSelection.location > 0, // It's not at the beginning
+         currentSelection.location <= documentLength // and not past the end
+      {
+        let backspaceOffset = currentSelection.location - 1
+        deleteRange = [NSRange(location: backspaceOffset, length: 1)]
+      }
+
+      return try self.makeDeleteTextCommand(for: deleteRange, in: self.currentDocument)
     }
 
     /// Add support for the `return` key which inserts a new line.
     defineShortcut(.defaultAction) {
       try self.makeInsertTextCommand(for: self.currentSelections, with: .init(string: "\n"), in: self.currentDocument)
+    }
+
+    /// Spacebar support
+    defineShortcut(KeyboardShortcut(.space)) {
+      try self.makeInsertTextCommand(for: self.currentSelections, with: .init(string: " "), in: self.currentDocument)
     }
   }
 

@@ -23,8 +23,28 @@ import SwiftUI
 
 extension KeyboardShortcut {
   init?(event: NSEvent) {
+    if event.specialKey != nil,
+        let specialKey = event.specialKey {
+      switch specialKey {
+      case .delete, .backspace:
+        self.init(KeyEquivalent.delete)
+        return
+      case .carriageReturn:
+        self.init(KeyEquivalent.return)
+        return
+      default:
+        return nil
+      }
+    }
+
     // Note: For simplicity we'll ignore things like chorded input and just get the first character.
     guard let firstKeyChar: Character = event.charactersIgnoringModifiers?.first else { return nil }
+    // Yet another hack for converting
+    if firstKeyChar == .init(" ") {
+      self.init(.space)
+      return
+    }
+
     self.init(KeyEquivalent(firstKeyChar), modifiers: Self.convert(modifierFlags: event.modifierFlags), localization: .automatic)
   }
 
