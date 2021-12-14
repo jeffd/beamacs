@@ -28,6 +28,11 @@ protocol Documentable {
   var description: String { get }
 }
 
+struct TextSelectionChange {
+  let from: [NSRange]
+  let to: [NSRange]
+}
+
 /// If something is undoable, it has a function which will be the
 /// opposite of the previous state.
 protocol Undoable {

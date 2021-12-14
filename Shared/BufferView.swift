@@ -37,6 +37,8 @@ struct BufferView: NSViewRepresentable {
   func updateNSView(_ nsView: NSViewType, context: Context) {}
 }
 
+/// For demonstration purposes, we'll forward events up one level.
+/// However, we'll accept first responder so we get focused text selection.
 internal class BMTextView: NSTextView {
   override var acceptsFirstResponder: Bool {
     true
@@ -45,11 +47,6 @@ internal class BMTextView: NSTextView {
   override func keyDown(with event: NSEvent) {
     superview?.keyDown(with: event)
   }
-}
-
-struct TextSelectionChange {
-  let from: [NSRange]
-  let to: [NSRange]
 }
 
 internal class EditorView: NSView, NSTextViewDelegate {
@@ -129,84 +126,39 @@ internal class EditorView: NSView, NSTextViewDelegate {
     true
   }
 
+  /// Note: This is just a quick and dirty way to send the events to the
+  /// CommandReader from outside the usual NSResponder chain.
   override func keyDown(with event: NSEvent) {
-    print("\(event.keyCode)")
-    // Note: For simplicity we'll ignore things like chorded input
-    if let firstKeyChar: Character = event.charactersIgnoringModifiers?.first {
-      let key = KeyEquivalent(firstKeyChar)
-      // TODO: Figure out modifiers
-      let shortcut = KeyboardShortcut(key, modifiers: .init(rawValue: Int(event.modifierFlags.rawValue)), localization: .automatic)
-
-      //print("Shortcut: \(shortcut)")
-
+    if let shortcut = KeyboardShortcut(event: event) {
       commandReader?.latestKeyDown.send(shortcut)
-
-      //insertText(event.charactersIgnoringModifiers)
-    }
-    else {
+    } else {
       super.keyDown(with: event)
     }
   }
 
-  func insertText(_ textToInsert: String?) {
-    guard let textToInsert = textToInsert else { return }
-    let attributedInsertion = NSAttributedString(string: textToInsert)
-
-    guard let textStorage = textContentStorage.textStorage else { return }
-    let selections = textLayoutManager.textSelections
-
-    if selections.isEmpty {
-      // If there's no selection location, then append to the end
-      textContentStorage.performEditingTransaction {
-        textStorage.append(attributedInsertion)
-      }
-    } else {
-//      textContentStorage.performEditingTransaction {
-//        textContentStorage.textStorage.insert(attributedInsertion, at: selections.first?.textRanges.first!.location)
-//      }
-
-      textContentStorage.performEditingTransaction {
-        selections.forEach { selection in
-          selection.textRanges.forEach { range in
-            //let elementsInRange = textContentStorage.textElements(for: range)
-            //textContentStorage.replaceContents(in: range, with: T##[NSTextElement]?)
-            //textStorage.insert(attributedInsertion, at: range.location as Int)
-            let index = textLayoutManager.offset(from: textLayoutManager.documentRange.location, to: range.location)
-            textStorage.insert(attributedInsertion, at: index)
-            //textLayoutManager.replaceContents(in: range, with: attributedInsertion)
-          }
-        }
-      }
-
-    }
-  }
-
+  ///
+  /// Note:
+  /// For purposes of demonstration, we'll prevent any outside changes to NSTextView from the system.
+  ///
   func textView(_ textView: NSTextView, shouldChangeTextInRanges affectedRanges: [NSValue], replacementStrings: [String]?) -> Bool {
-    print("shouldChangeTextInRanges: \(affectedRanges)")
     return false
   }
 
   func textView(_ textView: NSTextView, shouldChangeTextIn affectedCharRange: NSRange, replacementString: String?) -> Bool {
-    print("shouldChangeTextInRanges: \(affectedCharRange)")
     return false
   }
 
   func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
-    print("doCommandBy: \(commandSelector)")
     return true
   }
 
-  func textView(_ textView: NSTextView, candidates: [NSTextCheckingResult], forSelectedRange selectedRange: NSRange) -> [NSTextCheckingResult] {
-    print("candidates: \(candidates) forSelectedRange: \(selectedRange)")
-    return candidates
-  }
-
   func textView(_ textView: NSTextView, willChangeSelectionFromCharacterRanges oldSelectedCharRanges: [NSValue], toCharacterRanges newSelectedCharRanges: [NSValue]) -> [NSValue] {
-    print("willChangeSelectionFromCharacterRanges: \(oldSelectedCharRanges) toCharacterRanges: \(newSelectedCharRanges)")
-
+    /// Note: TextKit 2 has NSTextSelection objects which are nicer, however I cannot seem to find documentation on how to get
+    /// their changes from the layout manager.
     let fromRanges = oldSelectedCharRanges.map(\.rangeValue)
     let toRanges = newSelectedCharRanges.map(\.rangeValue)
 
+    // For possibly monitoring and allowing the undoing of selection, send these changes to the CommandReader.
     let rangeChange = TextSelectionChange(from: fromRanges, to: toRanges)
     commandReader?.latestSelection.send(rangeChange)
 
@@ -215,8 +167,10 @@ internal class EditorView: NSView, NSTextViewDelegate {
 }
 #endif
 
+#if DEBUG
 struct SwiftUIView_Previews: PreviewProvider {
   static var previews: some View {
     BufferView(.init(), commandReader: .init())
   }
 }
+#endif
