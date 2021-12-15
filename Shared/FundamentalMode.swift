@@ -46,7 +46,7 @@ class FundamentalMode: Mode {
   var commandTable = CommandTable(name: "Text Commands", description: "Basic text editing commands")
 
   var currentDocument: beamacsDocument?
-  var currentSelections: [NSRange] = []
+  var currentSelections: [NSRange] = [NSRange(location: 0, length: 0)]
 
   init() {
     setupCommands()
@@ -72,7 +72,7 @@ class FundamentalMode: Mode {
     }
 
     /// Add support for the `return` key which inserts a new line.
-    defineShortcut(.defaultAction) {
+    defineShortcut(KeyboardShortcut(.return)) {
       try self.makeInsertTextCommand(for: self.currentSelections, with: .init(string: "\n"), in: self.currentDocument)
     }
 
@@ -92,7 +92,7 @@ class FundamentalMode: Mode {
     // self inserting keys.
     if let firstCharScalar = shortcut.key.character.unicodeScalars.first,
        CharacterSet.alphanumerics.contains(firstCharScalar),
-       shortcut.modifiers.isDisjoint(with: .all) {
+       !shortcut.modifiers.contains([.control, .command, .option]) {
       return try self.makeInsertKeyCommand(shortcut, in: currentDocument)
     }
 

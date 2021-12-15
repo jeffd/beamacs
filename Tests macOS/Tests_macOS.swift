@@ -6,36 +6,62 @@
 //
 
 import XCTest
+import SwiftUI
+import beamacs
 
 class Tests_macOS: XCTestCase {
-  override func setUpWithError() throws {
-    // Put setup code here. This method is called before the invocation of each test method in the class.
+  var testDocument = beamacsDocument()
+  var commandReader = CommandReader()
 
+  override func setUpWithError() throws {
+    testDocument.textContentStorage.textStorage = .init(string: "")
+    commandReader = CommandReader()
+    commandReader.currentMode.currentDocument = testDocument
     // In UI tests it is usually best to stop immediately when a failure occurs.
     continueAfterFailure = false
-
-    // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
   }
 
   override func tearDownWithError() throws {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
   }
 
-  func testExample() throws {
+  func testUndoRedo() throws {
     // UI tests must launch the application that they test.
     let app = XCUIApplication()
     app.launch()
 
     // Use recording to get started writing UI tests.
     // Use XCTAssert and related functions to verify your tests produce the correct results.
+
+    let textView = XCUIApplication().windows["Untitled"].scrollViews.children(matching: .textView).element
+    textView.click()
+    textView.typeText("beamacs")
+    sleep(3)
+    textView.typeText("rocks")
+    textView.typeKey("z", modifierFlags:[.command])
+    textView.typeKey("r", modifierFlags:[.command])
   }
 
-  func testLaunchPerformance() throws {
-    if #available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *) {
-      // This measures how long it takes to launch your application.
-      measure(metrics: [XCTApplicationLaunchMetric()]) {
-        XCUIApplication().launch()
-      }
-    }
+  func testInsert() throws {
+    // Note: NSTextView automatically moves the cursor when the backing store changes
+    // so we do not manually move it, but do receive the updated events in the running app.
+    try commandReader.dispatchOnShortcut(KeyboardShortcut("h"))
+    // Manually update the selection for the purpose of testing
+    commandReader.currentMode.currentSelections = [NSRange(location: 1, length: 0)]
+    try commandReader.dispatchOnShortcut(KeyboardShortcut("e"))
+    commandReader.currentMode.currentSelections = [NSRange(location: 2, length: 0)]
+    try commandReader.dispatchOnShortcut(KeyboardShortcut("l"))
+    commandReader.currentMode.currentSelections = [NSRange(location: 3, length: 0)]
+    try commandReader.dispatchOnShortcut(KeyboardShortcut("l"))
+    commandReader.currentMode.currentSelections = [NSRange(location: 4, length: 0)]
+    try commandReader.dispatchOnShortcut(KeyboardShortcut("o"))
+    commandReader.currentMode.currentSelections = [NSRange(location: 5, length: 0)]
+
+    // Insert 'hello' one letter at a time
+    XCTAssertEqual(testDocument.textContentStorage.textStorage?.string, NSTextStorage(string: "hello").string)
+
+    // Delete one letter
+    try commandReader.dispatchOnShortcut(KeyboardShortcut(.delete))
+    XCTAssertEqual(testDocument.textContentStorage.textStorage?.string, NSTextStorage(string: "hell").string)
   }
 }

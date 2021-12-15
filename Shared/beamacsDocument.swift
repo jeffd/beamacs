@@ -37,7 +37,7 @@ enum FileError: Error {
 struct beamacsDocument: FileDocument {
   // MARK: Lifecycle
 
-  init(text: String = "Hello, world!") {
+  init(text: String = "") {
     self.textContentStorage = .init()
     self.textContentStorage.performEditingTransaction {
       self.textContentStorage.textStorage?.append(.init(string: text))

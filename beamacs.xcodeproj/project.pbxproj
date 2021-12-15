@@ -13,6 +13,14 @@
 		0B2C4A61276905DE002EA9FB /* KeyboardShortcut+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B2C4A5F276905DE002EA9FB /* KeyboardShortcut+Extensions.swift */; };
 		0B2C4A6327690E15002EA9FB /* FundamentalMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B2C4A6227690E15002EA9FB /* FundamentalMode.swift */; };
 		0B2C4A6427690E15002EA9FB /* FundamentalMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B2C4A6227690E15002EA9FB /* FundamentalMode.swift */; };
+		0B2C4A6527696480002EA9FB /* beamacsDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD7D3CF276415D300F5B2FE /* beamacsDocument.swift */; };
+		0B2C4A66276964F2002EA9FB /* FundamentalMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B2C4A6227690E15002EA9FB /* FundamentalMode.swift */; };
+		0B2C4A67276964F2002EA9FB /* CommandTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD7D4102764194200F5B2FE /* CommandTable.swift */; };
+		0B2C4A68276964F2002EA9FB /* CommandReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC7B378276581C7002BCBAA /* CommandReader.swift */; };
+		0B2C4A69276964F2002EA9FB /* Command.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B2C4A5C27690226002EA9FB /* Command.swift */; };
+		0B2C4A6A276964F2002EA9FB /* KeyboardShortcut+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B2C4A5F276905DE002EA9FB /* KeyboardShortcut+Extensions.swift */; };
+		0B2C4A6C27696584002EA9FB /* Collections in Frameworks */ = {isa = PBXBuildFile; productRef = 0B2C4A6B27696584002EA9FB /* Collections */; };
+		0B2C4A6E27696584002EA9FB /* Algorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 0B2C4A6D27696584002EA9FB /* Algorithms */; };
 		0BC7B379276581C7002BCBAA /* CommandReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC7B378276581C7002BCBAA /* CommandReader.swift */; };
 		0BC7B37A276581C7002BCBAA /* CommandReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC7B378276581C7002BCBAA /* CommandReader.swift */; };
 		0BC7B3AA2766819A002BCBAA /* Collections in Frameworks */ = {isa = PBXBuildFile; productRef = 0BC7B3A92766819A002BCBAA /* Collections */; };
@@ -108,6 +116,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0B2C4A6E27696584002EA9FB /* Algorithms in Frameworks */,
+				0B2C4A6C27696584002EA9FB /* Collections in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -274,6 +284,10 @@
 				0BD7D3F4276415D500F5B2FE /* PBXTargetDependency */,
 			);
 			name = "Tests macOS";
+			packageProductDependencies = (
+				0B2C4A6B27696584002EA9FB /* Collections */,
+				0B2C4A6D27696584002EA9FB /* Algorithms */,
+			);
 			productName = "Tests macOS";
 			productReference = 0BD7D3F2276415D500F5B2FE /* Tests macOS.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -408,7 +422,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0B2C4A66276964F2002EA9FB /* FundamentalMode.swift in Sources */,
 				0BD7D3F9276415D500F5B2FE /* Tests_macOSLaunchTests.swift in Sources */,
+				0B2C4A68276964F2002EA9FB /* CommandReader.swift in Sources */,
+				0B2C4A67276964F2002EA9FB /* CommandTable.swift in Sources */,
+				0B2C4A6A276964F2002EA9FB /* KeyboardShortcut+Extensions.swift in Sources */,
+				0B2C4A69276964F2002EA9FB /* Command.swift in Sources */,
+				0B2C4A6527696480002EA9FB /* beamacsDocument.swift in Sources */,
 				0BD7D3F7276415D500F5B2FE /* Tests_macOS.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -836,6 +856,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		0B2C4A6B27696584002EA9FB /* Collections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0BC7B3A827668199002BCBAA /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = Collections;
+		};
+		0B2C4A6D27696584002EA9FB /* Algorithms */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0BC7B3AE2767B692002BCBAA /* XCRemoteSwiftPackageReference "swift-algorithms" */;
+			productName = Algorithms;
+		};
 		0BC7B3A92766819A002BCBAA /* Collections */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 0BC7B3A827668199002BCBAA /* XCRemoteSwiftPackageReference "swift-collections" */;

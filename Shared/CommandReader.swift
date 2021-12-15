@@ -42,9 +42,14 @@ class CommandReader: NSObject, ObservableObject {
     super.init()
     keyDownSubscriber = latestKeyDown
       .receive(on: RunLoop.main)
-      .sink(receiveValue: { shortcut in
-        self.dispatchOnShortcut(shortcut)
-      })
+      .sink { shortcut in
+        do {
+          try self.dispatchOnShortcut(shortcut)
+        } catch {
+          __NSBeep()
+          print("Unable to run command: \(error.localizedDescription)")
+        }
+      }
 
     selectionSubscriber = latestSelection
       .receive(on: RunLoop.main)
@@ -77,13 +82,8 @@ class CommandReader: NSObject, ObservableObject {
     }
   }
 
-  func dispatchOnShortcut(_ shortcut: KeyboardShortcut) {
-    do {
-      pushCommand(try currentMode.command(for: shortcut))
-    } catch {
-      __NSBeep()
-      print("Unable to run command: \(error.localizedDescription)")
-    }
+  func dispatchOnShortcut(_ shortcut: KeyboardShortcut) throws {
+    pushCommand(try currentMode.command(for: shortcut))
   }
 
   private func pushCommand(_ command: Command) {
