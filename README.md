@@ -18,3 +18,7 @@ All mutating commands have an inverse function that keep track of what is needed
 
 This is the base mode for editing text. It has some basic text editing support. Alphanumeric keys that do not have any modifier keys are assumed to be self inserting, so they will insert themselves into the file at the current selection range.
 
+## Demo Video
+
+https://user-images.githubusercontent.com/2890/146105212-d75793a3-4e5e-4331-b416-9692ae58ab79.mp4
+
